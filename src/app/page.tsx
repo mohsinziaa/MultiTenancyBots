@@ -16,30 +16,7 @@ export default function Home() {
       setCurrentFeature((prev) => (prev + 1) % 3);
     }, 4000);
     
-    // Ensure widget initializes
-    const initWidget = () => {
-      if (typeof window !== 'undefined' && window.ChatbotWidget) {
-        console.log('Initializing widget from useEffect');
-        window.ChatbotWidget.init({
-          botId: 'cmf2hx2yh0001pu0g1q86uyj1',
-          position: 'bottom-right',
-          width: '400px',
-          height: '600px',
-          primaryColor: '#2563eb'
-        });
-      }
-    };
-    
-    // Try to initialize immediately
-    initWidget();
-    
-    // Also try after a delay in case script loads later
-    const timeout = setTimeout(initWidget, 2000);
-    
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   const features = [
@@ -297,23 +274,6 @@ export default function Home() {
         src="/chatbot-widget.js?bot-id=cmf2hx2yh0001pu0g1q86uyj1"
         data-auto-init
         strategy="afterInteractive"
-        onLoad={() => {
-          console.log('Chatbot widget script loaded');
-          // Ensure the widget initializes
-          if (typeof window !== 'undefined' && window.ChatbotWidget) {
-            console.log('ChatbotWidget object found, initializing...');
-            window.ChatbotWidget.init({
-              botId: 'cmf2hx2yh0001pu0g1q86uyj1',
-              position: 'bottom-right',
-              width: '400px',
-              height: '600px',
-              primaryColor: '#2563eb'
-            });
-          }
-        }}
-        onError={(e) => {
-          console.error('Error loading chatbot widget:', e);
-        }}
       />
     </div>
   );

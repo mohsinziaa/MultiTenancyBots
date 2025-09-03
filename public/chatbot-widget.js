@@ -7,10 +7,27 @@
     for (const script of scripts) {
       const src = script.getAttribute('src');
       if (src && src.includes('chatbot-widget.js')) {
-        const url = new URL(src);
-        const botId = url.searchParams.get('bot-id');
-        const baseUrl = url.origin; // Extract the base URL (e.g., https://multi-tenancy-bots.vercel.app)
-        return { botId, baseUrl };
+        try {
+          // Handle both absolute and relative URLs
+          let url;
+          if (src.startsWith('http://') || src.startsWith('https://')) {
+            // Absolute URL
+            url = new URL(src);
+          } else {
+            // Relative URL - construct absolute URL using current location
+            url = new URL(src, window.location.href);
+          }
+          
+          const botId = url.searchParams.get('bot-id');
+          const baseUrl = url.origin;
+          return { botId, baseUrl };
+        } catch (error) {
+          console.warn('Chatbot Widget: Could not parse script URL:', src, error);
+          // Fallback: try to extract bot-id manually
+          const botIdMatch = src.match(/[?&]bot-id=([^&]+)/);
+          const botId = botIdMatch ? botIdMatch[1] : null;
+          return { botId, baseUrl: window.location.origin };
+        }
       }
     }
     return { botId: null, baseUrl: null };
@@ -314,7 +331,14 @@
     if (!CONFIG.botId || !CONFIG.iframeUrl) {
       const { botId, baseUrl } = getBotIdAndBaseUrlFromScript();
       if (!CONFIG.botId) CONFIG.botId = botId;
-      if (!CONFIG.iframeUrl) CONFIG.iframeUrl = baseUrl + '/embed';
+      if (!CONFIG.iframeUrl) {
+        if (baseUrl) {
+          CONFIG.iframeUrl = baseUrl + '/embed';
+        } else {
+          // Fallback: use current location origin
+          CONFIG.iframeUrl = window.location.origin + '/embed';
+        }
+      }
     }
     
     // Validate bot ID
@@ -358,7 +382,14 @@
       if (!CONFIG.botId || !CONFIG.iframeUrl) {
         const { botId, baseUrl } = getBotIdAndBaseUrlFromScript();
         if (!CONFIG.botId) CONFIG.botId = botId;
-        if (!CONFIG.iframeUrl) CONFIG.iframeUrl = baseUrl + '/embed';
+        if (!CONFIG.iframeUrl) {
+          if (baseUrl) {
+            CONFIG.iframeUrl = baseUrl + '/embed';
+          } else {
+            // Fallback: use current location origin
+            CONFIG.iframeUrl = window.location.origin + '/embed';
+          }
+        }
       }
       
       // Debug logging
@@ -367,6 +398,11 @@
         iframeUrl: CONFIG.iframeUrl,
         position: CONFIG.position
       });
+      
+      // Additional debugging for URL resolution
+      const scripts = document.querySelectorAll('script[src*="chatbot-widget.js"]');
+      console.log('Chatbot Widget: Found scripts:', Array.from(scripts).map(s => s.src));
+      console.log('Chatbot Widget: Current location:', window.location.href);
       
       injectStyles();
       init();
