@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bot, Home, Settings, Play, FileText, Menu, X } from 'lucide-react';
+import { Bot, Home, Settings, Play, FileText, Menu, X, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Navigation() {
@@ -18,46 +18,54 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="bg-white/90 backdrop-blur-md border-b border-slate-200/40 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="relative bg-white/95 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-lg shadow-slate-200/20">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-transparent to-indigo-50/30 pointer-events-none" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-4 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-all duration-300 shadow-lg">
-                <Bot className="w-7 h-7 text-white" />
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-4 group">
+              <div className="relative">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-xl shadow-blue-500/25">
+                  <Bot className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              <div className="space-y-1">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
                   Multi-Tenant Chatbot
                 </h1>
-                <p className="text-sm text-slate-600 font-medium">AI Platform</p>
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500" />
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">AI Platform</p>
+                </div>
               </div>
             </Link>
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
               
               if (item.external) {
                 return (
-                                  <a
-                  key={item.name}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                    "text-slate-600 hover:text-slate-900 hover:bg-slate-50",
-                    "group hover:scale-[1.02]"
-                  )}
-                >
-                  <Icon className="w-4 h-4 text-slate-500 group-hover:text-slate-700 transition-transform" />
-                  <span>{item.name}</span>
-                </a>
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "flex items-center space-x-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300",
+                      "text-slate-600 hover:text-slate-900 hover:bg-white/80",
+                      "border border-transparent hover:border-slate-200/60"
+                    )}
+                  >
+                    <Icon className="w-4 h-4 text-slate-500 group-hover:text-slate-700 transition-all duration-300" />
+                    <span>{item.name}</span>
+                  </a>
                 );
               }
 
@@ -66,16 +74,16 @@ export function Navigation() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                    "flex items-center space-x-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300",
+                    "border border-transparent",
                     isActive
-                      ? "text-blue-600 bg-blue-50 border border-blue-200"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50",
-                    "group hover:scale-[1.02]"
+                      ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25 border-blue-500/20"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/80 hover:border-slate-200/60"
                   )}
                 >
                   <Icon className={cn(
-                    "w-4 h-4 transition-transform",
-                    isActive ? "text-blue-600" : "text-slate-500 group-hover:text-slate-700"
+                    "w-4 h-4 transition-all duration-300",
+                    isActive ? "text-white" : "text-slate-500 group-hover:text-slate-700"
                   )} />
                   <span>{item.name}</span>
                 </Link>
@@ -87,7 +95,7 @@ export function Navigation() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-3 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all duration-300"
+              className="p-3 text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-xl transition-all duration-300 border border-transparent hover:border-slate-200/60"
             >
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -101,28 +109,29 @@ export function Navigation() {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200/40 bg-white/95 backdrop-blur-md shadow-lg">
-          <div className="px-4 py-6 space-y-3">
+        <div className="md:hidden border-t border-slate-200/60 bg-white/98 backdrop-blur-xl shadow-xl shadow-slate-200/30">
+          <div className="px-4 py-6 space-y-2">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
               
               if (item.external) {
                 return (
-                                  <a
-                  key={item.name}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-                    "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  )}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </a>
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-300",
+                      "text-slate-600 hover:text-slate-900 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50",
+                      "border border-transparent hover:border-slate-200/60"
+                    )}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Icon className="w-5 h-5 text-slate-500 group-hover:text-slate-700 transition-all duration-300" />
+                    <span>{item.name}</span>
+                  </a>
                 );
               }
 
@@ -131,14 +140,18 @@ export function Navigation() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                    "flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-300",
+                    "border border-transparent",
                     isActive
-                      ? "text-blue-600 bg-blue-50 border border-blue-200"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                      ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 hover:border-slate-200/60"
                   )}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className={cn(
+                    "w-5 h-5 transition-all duration-300",
+                    isActive ? "text-white" : "text-slate-500 group-hover:text-slate-700"
+                  )} />
                   <span>{item.name}</span>
                 </Link>
               );
