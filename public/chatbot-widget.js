@@ -1,22 +1,24 @@
 (function() {
   'use strict';
 
-  // Get bot ID from script tag
-  function getBotIdFromScript() {
+  // Get bot ID and base URL from script tag
+  function getBotIdAndBaseUrlFromScript() {
     const scripts = document.querySelectorAll('script[src*="chatbot-widget.js"]');
     for (const script of scripts) {
       const src = script.getAttribute('src');
       if (src && src.includes('chatbot-widget.js')) {
-        const url = new URL(src, window.location.origin);
-        return url.searchParams.get('bot-id');
+        const url = new URL(src);
+        const botId = url.searchParams.get('bot-id');
+        const baseUrl = url.origin; // Extract the base URL (e.g., https://multi-tenancy-bots.vercel.app)
+        return { botId, baseUrl };
       }
     }
-    return null;
+    return { botId: null, baseUrl: null };
   }
 
   // Configuration
   const CONFIG = {
-    iframeUrl: window.location.origin + '/embed',
+    iframeUrl: null, // Will be set dynamically based on script src
     position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left
     width: '400px',
     height: '600px',
@@ -181,6 +183,8 @@
       iframeUrl += `?bot-id=${CONFIG.botId}`;
     }
     
+    console.log('Chatbot Widget: Creating iframe with URL:', iframeUrl);
+    
     iframe.src = iframeUrl;
     iframe.className = 'chatbot-iframe';
     iframe.style.width = CONFIG.width;
@@ -306,14 +310,22 @@
 
   // Initialize widget
   function init() {
-    // Get bot ID from script tag if not provided in config
-    if (!CONFIG.botId) {
-      CONFIG.botId = getBotIdFromScript();
+    // Get bot ID and base URL from script tag if not provided in config
+    if (!CONFIG.botId || !CONFIG.iframeUrl) {
+      const { botId, baseUrl } = getBotIdAndBaseUrlFromScript();
+      if (!CONFIG.botId) CONFIG.botId = botId;
+      if (!CONFIG.iframeUrl) CONFIG.iframeUrl = baseUrl + '/embed';
     }
     
     // Validate bot ID
     if (!CONFIG.botId) {
       console.error('Chatbot Widget: Bot ID not specified. Please provide a bot-id parameter in the script URL.');
+      return;
+    }
+    
+    // Validate iframe URL
+    if (!CONFIG.iframeUrl) {
+      console.error('Chatbot Widget: Could not determine iframe URL. Please check the script src.');
       return;
     }
     
@@ -342,10 +354,19 @@
     init: function(config = {}) {
       Object.assign(CONFIG, config);
       
-      // Get bot ID from script tag if not provided
-      if (!CONFIG.botId) {
-        CONFIG.botId = getBotIdFromScript();
+      // Get bot ID and base URL from script tag if not provided
+      if (!CONFIG.botId || !CONFIG.iframeUrl) {
+        const { botId, baseUrl } = getBotIdAndBaseUrlFromScript();
+        if (!CONFIG.botId) CONFIG.botId = botId;
+        if (!CONFIG.iframeUrl) CONFIG.iframeUrl = baseUrl + '/embed';
       }
+      
+      // Debug logging
+      console.log('Chatbot Widget: Initializing with config:', {
+        botId: CONFIG.botId,
+        iframeUrl: CONFIG.iframeUrl,
+        position: CONFIG.position
+      });
       
       injectStyles();
       init();
