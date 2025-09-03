@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Tenant Chatbot Integration Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #334155;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section p {
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+            border: 1px solid #334155;
+        }
+
+        .code-block code {
+            color: #10b981;
+        }
+
+        .button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0.25rem;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .button.secondary {
+            background: #64748b;
+        }
+
+        .button.secondary:hover {
+            background: #475569;
+        }
+
+        .demo-buttons {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature h3 {
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .feature p {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .note {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .warning {
+            background: #fef2f2;
+            border: 1px solid #f87171;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .bot-example {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            color: #0c4a6e;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .bot-example h3 {
+            color: #0ea5e9;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: inline-block;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        ul li:last-child {
+            border-bottom: none;
+        }
+
+        ul li::before {
+            content: "✅";
+            color: #10b981;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Multi-Tenant Chatbot Integration</h1>
+            <p>Simple, powerful chatbot integration for your website. Each bot has unique knowledge, branding, and behavior.</p>
+        </div>
+
+        <div class="section">
+            <h2>📋 Quick Start</h2>
+            <p>Add this single line to your HTML with your specific bot ID:</p>
+            <div class="code-block">
+&lt;script src="https://multi-tenancy-bots.vercel.app/chatbot-widget.js?bot-id=<span class="code">YOUR_BOT_ID</span>" data-auto-init&gt;&lt;/script&gt;
+            </div>
+            <p><strong>Replace <span class="highlight">YOUR_BOT_ID</span> with your actual bot ID from the dashboard.</strong></p>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Bot ID Examples</h2>
+            <div class="bot-example">
+                <h3>Plumbing Company Bot</h3>
+                <div class="code-block">
+&lt;script src="https://multi-tenancy-bots.vercel.app/chatbot-widget.js?bot-id=<span class="code">cmf2hem3e0000pu0gnfy09cwa</span>" data-auto-init&gt;&lt;/script&gt;
+                </div>
+                <p>Configured for plumbing services with specific knowledge and branding.</p>
+            </div>
+            
+            <div class="bot-example">
+                <h3>HVAC Company Bot</h3>
+                <div class="code-block">
+&lt;script src="https://multi-tenancy-bots.vercel.app/chatbot-widget.js?bot-id=<span class="code">cmf2hx2yh0001pu0g1q86uyj1</span>" data-auto-init&gt;&lt;/script&gt;
+                </div>
+                <p>Configured for HVAC services with different expertise and company branding.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ Advanced Configuration</h2>
+            <p>For more control, initialize with custom settings:</p>
+            <div class="code-block">
+&lt;script src="https://multi-tenancy-bots.vercel.app/chatbot-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  ChatbotWidget.init({
+    botId: '<span class="code">cmf2hem3e0000pu0gnfy09cwa</span>',
+    position: 'bottom-right',
+    width: '400px',
+    height: '600px',
+    primaryColor: '#dc2626'
+  });
+&lt;/script&gt;
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎮 JavaScript API</h2>
+            <p>Control the chatbot programmatically:</p>
+            <div class="demo-buttons">
+                <button class="button" onclick="ChatbotWidget.open()">Open Chat</button>
+                <button class="button secondary" onclick="ChatbotWidget.minimize()">Minimize</button>
+                <button class="button secondary" onclick="ChatbotWidget.close()">Close Chat</button>
+                <button class="button" onclick="ChatbotWidget.sendMessage('Hello! I have a question.')">Send Test Message</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Configuration Options</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>Bot ID (Required)</h3>
+                    <p><span class="highlight">botId</span> - Your unique bot identifier from the dashboard</p>
+                </div>
+                <div class="feature">
+                    <h3>Position</h3>
+                    <p><span class="highlight">bottom-right</span>, <span class="highlight">bottom-left</span>, <span class="highlight">top-right</span>, <span class="highlight">top-left</span></p>
+                </div>
+                <div class="feature">
+                    <h3>Size</h3>
+                    <p>Customize <span class="highlight">width</span> and <span class="highlight">height</span> (e.g., '400px', '600px')</p>
+                </div>
+                <div class="feature">
+                    <h3>Colors</h3>
+                    <p>Set <span class="highlight">primaryColor</span> for branding and theme</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Complete Integration Example</h2>
+            <div class="code-block">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;My Company&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Welcome to My Company&lt;/h1&gt;
+    &lt;p&gt;Professional services for your needs&lt;/p&gt;
+    
+    &lt;!-- Chatbot Widget --&gt;
+    &lt;script src="https://multi-tenancy-bots.vercel.app/chatbot-widget.js?bot-id=<span class="code">YOUR_BOT_ID</span>"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        ChatbotWidget.init({
+            position: 'bottom-right',
+            width: '400px',
+            height: '600px',
+            primaryColor: '#2563eb'
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✨ Features</h2>
+            <ul>
+                <li><strong>Bot-specific knowledge</strong> - Each bot has unique expertise</li>
+                <li><strong>Custom branding</strong> - Company names and descriptions</li>
+                <li><strong>Multi-tenant architecture</strong> - Separate bots for different clients</li>
+                <li><strong>Responsive design</strong> - Works perfectly on all devices</li>
+                <li><strong>Customizable positioning</strong> - Place anywhere on your page</li>
+                <li><strong>JavaScript API</strong> - Full programmatic control</li>
+                <li><strong>Mobile optimized</strong> - Touch-friendly interface</li>
+                <li><strong>Secure communication</strong> - Safe iframe messaging</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> 
+            <ul>
+                <li>You <strong>MUST</strong> provide a valid bot ID in the script URL</li>
+                <li>Without a bot ID, the widget will not initialize</li>
+                <li>Ensure your bot is active in the dashboard</li>
+                <li>Test with your bot ID before deploying to production</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🔍 How It Works</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>1. Bot ID Detection</h3>
+                    <p>The widget reads the bot ID from the script URL parameter</p>
+                </div>
+                <div class="feature">
+                    <h3>2. Configuration Fetch</h3>
+                    <p>Fetches bot-specific settings, system prompt, and branding</p>
+                </div>
+                <div class="feature">
+                    <h3>3. Custom Interface</h3>
+                    <p>Displays bot-specific name, company, and behavior</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🌐 Browser Support</h2>
+            <p>Works in all modern browsers:</p>
+            <ul>
+                <li>Chrome 60+</li>
+                <li>Firefox 55+</li>
+                <li>Safari 12+</li>
+                <li>Edge 79+</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <script src="/chatbot-widget.js?bot-id=cmf2hem3e0000pu0gnfy09cwa"></script>
+    <script>
+        ChatbotWidget.init({
+            position: 'bottom-right',
+            width: '400px',
+            height: '600px',
+            primaryColor: '#2563eb'
+        });
+    </script>
+</body>
+</html>

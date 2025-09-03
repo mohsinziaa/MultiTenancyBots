@@ -1,54 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// PUT /api/bots/[id] - Update a bot
-export async function PUT(
+// GET /api/bots/[id] - Get bot configuration by ID
+export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    if (!id) {
-      return NextResponse.json({ error: 'Bot ID is required' }, { status: 400 });
-    }
-
-    const body = await request.json();
-    const { name, description, companyName, systemPrompt } = body;
-
-    // Validate required fields
-    if (!name || !systemPrompt) {
-      return NextResponse.json(
-        { error: 'Name and System Prompt are required' },
-        { status: 400 }
-      );
-    }
-
-    // Check if bot exists
-    const existingBot = await prisma.bot.findUnique({
-      where: { id }
+    
+    const bot = await prisma.bot.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        companyName: true,
+        systemPrompt: true,
+        isActive: true
+      }
     });
 
-    if (!existingBot) {
+    if (!bot) {
       return NextResponse.json(
         { error: 'Bot not found' },
         { status: 404 }
       );
     }
 
-    // Update the bot
-    const updatedBot = await prisma.bot.update({
+    if (!bot.isActive) {
+      return NextResponse.json(
+        { error: 'Bot is not active' },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(bot);
+  } catch (error) {
+    console.error('Error fetching bot:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch bot' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/bots/[id] - Update bot
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const { name, description, companyName, systemPrompt, isActive } = body;
+
+    const bot = await prisma.bot.update({
       where: { id },
       data: {
-        name: name.trim(),
-        description: description?.trim() || null,
-        companyName: companyName?.trim() || null,
-        systemPrompt: systemPrompt.trim(),
-        updatedAt: new Date()
+        name,
+        description,
+        companyName,
+        systemPrompt,
+        isActive
       }
     });
 
-    return NextResponse.json(updatedBot, { status: 200 });
-
+    return NextResponse.json(bot);
   } catch (error) {
     console.error('Error updating bot:', error);
     return NextResponse.json(
@@ -58,34 +76,19 @@ export async function PUT(
   }
 }
 
-// DELETE /api/bots/[id] - Delete a bot
+// DELETE /api/bots/[id] - Delete bot
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    if (!id) {
-      return NextResponse.json({ error: 'Bot ID is required' }, { status: 400 });
-    }
+    
+    await prisma.bot.delete({
+      where: { id }
+    });
 
-    // Check if bot exists
-    const existingBot = await prisma.bot.findUnique({ where: { id } });
-    if (!existingBot) {
-      return NextResponse.json(
-        { error: 'Bot not found' },
-        { status: 404 }
-      );
-    }
-
-    // Delete the bot
-    await prisma.bot.delete({ where: { id } });
-
-    return NextResponse.json(
-      { message: 'Bot deleted successfully' },
-      { status: 200 }
-    );
-
+    return NextResponse.json({ message: 'Bot deleted successfully' });
   } catch (error) {
     console.error('Error deleting bot:', error);
     return NextResponse.json(

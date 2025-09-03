@@ -44,7 +44,7 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
             </button>
             
             {/* Text input field */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex items-center">
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -52,10 +52,12 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
                 placeholder={placeholder}
                 disabled={disabled}
                 className={cn(
-                  "w-full h-full min-h-[44px] sm:min-h-[48px] max-h-32 resize-none border-0 focus:outline-none focus:ring-0",
-                  "px-2 py-2 sm:px-4 sm:py-3 text-slate-900 placeholder-slate-500 bg-transparent",
+                  "w-full min-h-[36px] sm:min-h-[40px] max-h-20 sm:max-h-32 resize-none border-0 focus:outline-none focus:ring-0",
+                  "px-3 py-2 sm:px-4 sm:py-2 text-slate-900 placeholder-slate-500 bg-transparent",
                   "text-sm sm:text-base",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "overflow-y-auto",
+                  "leading-[36px] sm:leading-[40px]"
                 )}
                 rows={1}
               />

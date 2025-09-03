@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Plus, Trash2, Edit, Eye, X } from 'lucide-react';
+import { Bot, Plus, Trash2, Edit, Eye, X, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BotData {
@@ -45,6 +45,11 @@ export default function BotsPage() {
     systemPrompt: ''
   });
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Manage Bots | Multi Tenant Chatbot";
+  }, []);
+
   // Fetch bots on component mount
   useEffect(() => {
     fetchBots();
@@ -82,6 +87,26 @@ export default function BotsPage() {
       } catch (error) {
         console.error('Error deleting bot:', error);
       }
+    }
+  };
+
+  const handleCopyScript = async (botId: string) => {
+    const script = `<script src="https://multi-tenancy-bots.vercel.app/chatbot-widget.js?bot-id=${botId}" data-auto-init></script>`;
+    
+    try {
+      await navigator.clipboard.writeText(script);
+      // You could add a toast notification here if you want
+      alert('Script copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy script:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = script;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Script copied to clipboard!');
     }
   };
 
@@ -449,24 +474,31 @@ export default function BotsPage() {
                           {formatDate(bot.createdAt)}
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1">
                             <button 
                               onClick={() => handleOpenChat(bot)}
-                              className="group p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 cursor-pointer"
+                              className="group p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 cursor-pointer"
                               title="Test Bot"
                             >
                               <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
                             </button>
                             <button 
+                              onClick={() => handleCopyScript(bot.id)}
+                              className="group p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200 cursor-pointer"
+                              title="Copy Embed Script"
+                            >
+                              <Copy className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            </button>
+                            <button 
                               onClick={() => handleEditBot(bot)}
-                              className="group p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all duration-200 cursor-pointer"
+                              className="group p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all duration-200 cursor-pointer"
                               title="Edit Bot"
                             >
                               <Edit className="w-4 h-4 group-hover:scale-110 transition-transform" />
                             </button>
                             <button
                               onClick={() => handleDeleteBot(bot.id)}
-                              className="group p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer"
+                              className="group p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer"
                               title="Delete Bot"
                             >
                               <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
