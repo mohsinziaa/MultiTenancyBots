@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { 
   Zap, Shield, ArrowRight, Star, 
@@ -9,14 +9,72 @@ import {
   Building2, Globe2, Lock as LockIcon, Star as StarIcon
 } from 'lucide-react';
 
-
-
-
 export default function Home() {
+  const [botId, setBotId] = useState('cmf2hx2yh0001pu0g1q86uyj1');
 
   useEffect(() => {
     document.title = "Home | Multi Tenant Chatbot";
-  }, []);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlBotId = urlParams.get('bot-id');
+    if (urlBotId) {
+      setBotId(urlBotId);
+    }
+
+    const script = document.createElement('script');
+    script.src = `/chatbot-widget.js?bot-id=${botId}`;
+    script.setAttribute('data-auto-init', '');
+    
+    const handleWidgetMessage = (event: MessageEvent) => {
+      if (event.data.type === 'CHATBOT_READY') {
+        console.log('Chatbot widget is ready');
+      }
+    };
+    
+    window.addEventListener('message', handleWidgetMessage);
+    
+    script.onload = () => {
+      setTimeout(() => {
+        if (window.ChatbotWidget) {
+          window.ChatbotWidget.init({ botId: botId });
+          
+          let checkCount = 0;
+          const maxChecks = 20;
+          
+          const checkIframeReady = () => {
+            checkCount++;
+            
+            if (window.ChatbotWidget.isReady && window.ChatbotWidget.isReady()) {
+              console.log('Chatbot widget is ready');
+            } else if (checkCount >= maxChecks) {
+              console.error('Widget failed to become ready after maximum checks');
+            } else {
+              setTimeout(checkIframeReady, 500);
+            }
+          };
+          
+          setTimeout(() => {
+            checkIframeReady();
+          }, 1000);
+          
+        } else {
+          console.error('ChatbotWidget object not found');
+        }
+      }, 500);
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+      if (window.ChatbotWidget) {
+        window.ChatbotWidget.destroy();
+      }
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      window.removeEventListener('message', handleWidgetMessage);
+    };
+  }, [botId]);
 
   const highlights = [
     {
@@ -121,7 +179,7 @@ export default function Home() {
     {
       icon: Globe2,
       title: "Multi-channel support",
-      description: "Seamless integration across Slack, WhatsApp, Messenger, and web widgets."
+      description: "Smooth integration across Slack, WhatsApp, Messenger, and web widgets."
     },
     {
       icon: Shield,

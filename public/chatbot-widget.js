@@ -174,6 +174,18 @@
       }
       
       
+      @media (min-width: 769px) and (max-width: 1366px) {
+        .chatbot-widget-container {
+          width: 380px !important;
+          height: 575px !important;
+        }
+        
+        .chatbot-iframe {
+          width: 100% !important;
+          height: calc(100% - 80px) !important;
+        }
+      }
+      
       @media (max-width: 768px) {
         .chatbot-widget-container {
           bottom: 20px !important;
