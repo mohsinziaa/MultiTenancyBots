@@ -39,7 +39,7 @@
     position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left
     width: '400px',
     height: '600px',
-    zIndex: 999999,
+    zIndex: 9999999,
     theme: 'light', // light, dark
     primaryColor: '#2563eb',
     secondaryColor: '#1e40af',
@@ -61,10 +61,10 @@
       .chatbot-widget-container {
         position: fixed;
         z-index: ${CONFIG.zIndex};
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         background: transparent;
-        border-radius: 12px;
-        overflow: hidden;
+        border-radius: 16px;
+        overflow: visible;
       }
       
       .chatbot-widget-container.bottom-right {
@@ -101,23 +101,36 @@
         justify-content: center;
         color: white;
         font-size: 24px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        z-index: 10000000;
       }
       
       .chatbot-toggle-button:hover {
         transform: scale(1.1);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
       }
+
+      .chatbot-toggle-button.minimized {
+        background: #6b7280;
+      }
+
+      .chatbot-toggle-button.minimized:hover {
+        background: #4b5563;
+      }
       
       .chatbot-iframe {
         border: none;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
         background: white;
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
+        margin-bottom: 80px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: block;
         width: 100%;
         height: 100%;
+        overflow: hidden;
       }
       
       .chatbot-iframe.minimized {
@@ -129,28 +142,37 @@
       .chatbot-iframe.hidden {
         display: none;
       }
-      
-      .chatbot-close-button {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: #ef4444;
-        border: none;
-        cursor: pointer;
-        color: white;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+      .chatbot-iframe.opening {
+        animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .chatbot-iframe.closing {
+        animation: slideOutDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes slideInUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOutDown {
+        from {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateY(20px);
+          opacity: 0;
+        }
       }
       
-      .chatbot-close-button:hover {
-        background: #dc2626;
-      }
       
       @media (max-width: 768px) {
         .chatbot-widget-container {
@@ -165,8 +187,8 @@
         
         .chatbot-iframe {
           width: 100% !important;
-          height: 100% !important;
-          margin-bottom: 0 !important;
+          height: calc(100% - 90px) !important;
+          margin-bottom: 90px !important;
           border-radius: 0 !important;
         }
         
@@ -189,6 +211,7 @@
     toggleButton.addEventListener('click', toggleChat);
     return toggleButton;
   }
+
 
   // Create iframe
   function createIframe() {
@@ -241,8 +264,10 @@
   // Toggle chat visibility
   function toggleChat() {
     if (isOpen) {
-      closeChat();
+      // If chat is open, minimize it
+      minimizeChat();
     } else {
+      // If chat is closed or minimized, open it
       openChat();
     }
   }
@@ -258,13 +283,21 @@
     isMinimized = false;
     
     iframe.style.display = 'block';
-    iframe.classList.remove('minimized', 'hidden');
+    iframe.classList.remove('minimized', 'hidden', 'closing');
+    iframe.classList.add('opening');
     
-    // Update toggle button
+    // Remove opening class after animation
+    setTimeout(() => {
+      iframe.classList.remove('opening');
+    }, 300);
+    
+    // Update toggle button to show arrow down (minimize)
     if (toggleButton) {
-      toggleButton.innerHTML = '−';
+      toggleButton.innerHTML = '↓';
       toggleButton.title = 'Minimize chat';
+      toggleButton.classList.remove('minimized');
     }
+    
     
     // Send message to iframe
     try {
@@ -284,14 +317,22 @@
     isOpen = false;
     isMinimized = false;
     
-    iframe.style.display = 'none';
-    iframe.classList.add('hidden');
+    iframe.classList.add('closing');
     
-    // Update toggle button
+    // Hide after animation completes
+    setTimeout(() => {
+      iframe.style.display = 'none';
+      iframe.classList.add('hidden');
+      iframe.classList.remove('closing');
+    }, 300);
+    
+    // Update toggle button back to chat icon
     if (toggleButton) {
       toggleButton.innerHTML = '💬';
       toggleButton.title = 'Chat with us';
+      toggleButton.classList.remove('minimized');
     }
+    
     
     // Send message to iframe
     try {
@@ -309,13 +350,23 @@
     }
     
     isMinimized = true;
-    iframe.classList.add('minimized');
+    isOpen = false;
+    iframe.classList.add('closing');
     
-    // Update toggle button
+    // Hide after animation completes
+    setTimeout(() => {
+      iframe.style.display = 'none';
+      iframe.classList.add('hidden');
+      iframe.classList.remove('closing');
+    }, 300);
+    
+    // Update toggle button to show chat icon with minimized state
     if (toggleButton) {
       toggleButton.innerHTML = '💬';
       toggleButton.title = 'Open chat';
+      toggleButton.classList.add('minimized');
     }
+    
     
     // Send message to iframe
     try {

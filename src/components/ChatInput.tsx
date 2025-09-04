@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Send, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -10,8 +10,21 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
-export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type your message..." }: ChatInputProps) {
+export interface ChatInputRef {
+  focus: () => void;
+}
+
+export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSendMessage, disabled = false, placeholder = "Type your message..." }, ref) => {
   const [message, setMessage] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }
+  }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +59,7 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
             {/* Text input field */}
             <div className="flex-1 min-w-0 flex items-center">
               <textarea
+                ref={textareaRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -84,4 +98,6 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
       </div>
     </div>
   );
-}
+});
+
+ChatInput.displayName = 'ChatInput';

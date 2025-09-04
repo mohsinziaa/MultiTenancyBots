@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage } from '@/components/ChatMessage';
-import { ChatInput } from '@/components/ChatInput';
+import { ChatInput, ChatInputRef } from '@/components/ChatInput';
 import { ChatMessage as ChatMessageType, ChatRequest, ChatResponse } from '@/types/chat';
 import { generateId } from '@/lib/utils';
 import { Bot, MessageCircle, AlertCircle } from 'lucide-react';
@@ -28,6 +28,7 @@ export default function EmbedPage() {
   const [botError, setBotError] = useState<string>('');
   const [isLoadingBot, setIsLoadingBot] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
 
   // Get bot ID from URL parameters
   const getBotId = () => {
@@ -62,6 +63,13 @@ export default function EmbedPage() {
           timestamp: new Date(),
         };
         setMessages(prev => [...prev, assistantMessage]);
+        
+        // Focus the input field after streaming completes
+        setTimeout(() => {
+          if (chatInputRef.current) {
+            chatInputRef.current.focus();
+          }
+        }, 100);
       }
     }, streamSpeed);
   };
@@ -178,6 +186,17 @@ export default function EmbedPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingMessage]);
+
+  // Focus input when chat becomes available and not loading
+  useEffect(() => {
+    if (botConfig && !isLoadingBot && !isLoading && !isStreaming) {
+      setTimeout(() => {
+        if (chatInputRef.current) {
+          chatInputRef.current.focus();
+        }
+      }, 300);
+    }
+  }, [botConfig, isLoadingBot, isLoading, isStreaming]);
 
   // Initialize session on component mount
   useEffect(() => {
@@ -299,6 +318,7 @@ export default function EmbedPage() {
       {/* Chat Input */}
       <div className="border-t border-slate-200 bg-white p-4">
         <ChatInput
+          ref={chatInputRef}
           onSendMessage={handleSendMessage}
           disabled={isLoading || isStreaming}
           placeholder="Type your message..."
